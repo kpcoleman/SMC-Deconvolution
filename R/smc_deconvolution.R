@@ -21,6 +21,11 @@
 
 
 smc_deconvolution = function(X,Y,M,N=40,L=1, num_cores=1){
+  compute_cv = function(x) sd(x) / mean(x)
+  cv = apply(X, 1, compute_cv)
+  cutoff =0.05
+  X = X[rank(cv) / length(cv) > 1 - cutoff, ]
+  Y = Y[rank(cv) / length(cv) > 1 - cutoff, ]
   deconvolution = function(X,Y,N){
     K = ncol(X)
     J=ncol(Y)
