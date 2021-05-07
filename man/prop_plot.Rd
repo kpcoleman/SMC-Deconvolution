@@ -2,7 +2,7 @@
 % Please edit documentation in R/deconvolution.R
 \name{prop_plot}
 \alias{prop_plot}
-\title{deconvolution}
+\title{prop_plot}
 \usage{
 prop_plot(X, Y, M, N = 40, L = 1, num_cores = 1)
 }
@@ -16,5 +16,5 @@ prop_plot(X, Y, M, N = 40, L = 1, num_cores = 1)
 \item{L}{number of iterations}
 }
 \description{
-deconvolution
+prop_plot
 }
