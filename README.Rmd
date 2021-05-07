@@ -16,6 +16,8 @@ knitr::opts_chunk$set(
 # smc.deconvolution
 
 <!-- badges: start -->
+[![Travis build status](https://travis-ci.com/kpcoleman/SMC-Deconvolution.svg?branch=main)](https://travis-ci.com/kpcoleman/SMC-Deconvolution)
+[![R-CMD-check](https://github.com/kpcoleman/SMC-Deconvolution/workflows/R-CMD-check/badge.svg)](https://github.com/kpcoleman/SMC-Deconvolution/actions)
 <!-- badges: end -->
 
 The goal of smc.deconvolution is to ...
