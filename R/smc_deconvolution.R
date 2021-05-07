@@ -1,21 +1,21 @@
-#' prop_plot
+#' smc_deconvolution
 #'
 #' @param X cell-type specific GE data
 #' @param Y bulk GE data
 #' @param N number of samples
 #' @param L number of iterations
 #'
+#'@return a data frame with deconvolution results
 #'
 #'
 #'@importFrom stats rgamma rnorm runif
 #'@importFrom pracma randsample
 #'@importFrom rlang duplicate
 #'
-#'
-#'
+#'@export
 
 
-prop_plot = function(X,Y,M,N=40,L=1, num_cores=1){
+smc_deconvolution = function(X,Y,M,N=40,L=1, num_cores=1){
   deconvolution = function(X,Y,N){
     K = ncol(X)
     J=ncol(Y)
