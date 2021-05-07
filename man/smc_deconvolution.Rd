@@ -11,9 +11,13 @@ smc_deconvolution(X, Y, M, N = 40, L = 1, num_cores = 1)
 
 \item{Y}{bulk GE data}
 
+\item{M}{true cell-type proportions}
+
 \item{N}{number of samples}
 
 \item{L}{number of iterations}
+
+\item{num_cores}{number of cores}
 }
 \value{
 a data frame with deconvolution results

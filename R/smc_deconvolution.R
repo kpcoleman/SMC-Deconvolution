@@ -13,6 +13,9 @@
 #'@importFrom stats rgamma rnorm runif
 #'@importFrom pracma randsample
 #'@importFrom rlang duplicate
+#'@import parallel
+#'@import foreach
+#'@import doParallel
 #'
 #'@export
 
@@ -128,7 +131,6 @@ smc_deconvolution = function(X,Y,M,N=40,L=1, num_cores=1){
   cl = makeCluster(num_cores,type="SOCK")
   registerDoParallel(cl)
   props = foreach(l=1:L) %dopar% {
-    print(l)
     deconvolution(X,Y,N)
   }
   stopCluster(cl)

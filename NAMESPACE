@@ -2,6 +2,11 @@
 
 export(scatter_plot)
 export(smc_deconvolution)
+import(doParallel)
+import(foreach)
+import(graphics)
+import(parallel)
+import(stats)
 importFrom(pracma,randsample)
 importFrom(rlang,duplicate)
 importFrom(stats,rgamma)
