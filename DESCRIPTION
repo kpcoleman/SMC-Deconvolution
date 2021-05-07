@@ -2,18 +2,17 @@ Package: smc.deconvolution
 Title: A Sequential Monte Carlo Approach for Cell-Type Deconvolution
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person(given = "Kyle",
+           family = "Coleman",
+           email = "kylecole@pennmedicine.upenn.edu",
+           role = c("aut", "cre"))
+Description: This package can be used to estimate the proportions of cell types in a bulk GE dataset.
+License: Artistic-2.0
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10)
+Imports: pracma, rlang, stats
 
