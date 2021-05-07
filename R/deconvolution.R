@@ -10,6 +10,9 @@
 #' @examples
 #' deconvolution(X,Y,30)
 
+#test
+
+
 deconvolution = function(X,Y,N=40){
   K = ncol(X)
   J=ncol(Y)
