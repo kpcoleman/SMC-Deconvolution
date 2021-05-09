@@ -4,14 +4,14 @@
 \alias{prop_rdirichlet}
 \title{prop_rdirichlet}
 \usage{
-prop_rdirichlet(seed, n, k, types)
+prop_rdirichlet(seed, n, K, types)
 }
 \arguments{
 \item{seed}{seed set}
 
 \item{n}{number of samples}
 
-\item{k}{number of cell types}
+\item{K}{number of cell types}
 
 \item{types}{cell types}
 }

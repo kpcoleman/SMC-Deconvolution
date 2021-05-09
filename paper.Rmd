@@ -11,9 +11,9 @@ citation_package: bibtex
 
 ## Reproducibility
 
-The following code chunks can be run to reproduce the results show in Figure 1 of this paper, without and with parallelization. X is a matrix containing the cell-type specific gene expression (GE) levels for brain and heart cells, and the function hvg_selection() is used to reduce the dimensionality of X by selection the top (100*p)\% highly variable genes, where p = 0.05 by default. We then load the matrix M that contains the proportion of cell types in the heterogeneous samples, as specified by the authours. The matrix Y, consisting of the GE levels of the heterogeneous samples, is then constructed by multiplying the matrices X and M. We then run the sequential Monte Carlo deconvolution algorithm, using the function smc_deconvolution(), to estimate the proportion of cell types in each of the samples of Y. K represents the number of cell types in the samples of Y, and L is the number of iterations of the algorithm. The parameter 'parallel' is set to FALSE by default. Along with the estimated cell type proportions, the algorithm also provides the runtime for each of the iterations if parallelization is not used, and the total runtime of the algorithm if parallelization is used.
+Code chunk (1) can be run to estimate the proportions of brain and heart cells in heterogeneous samples generated according to the proportions in $M^*$, defined in the results section of this paper. 
 
-No parallelization:
+(1) $M^*$, no parallelization:
 ```{r, eval = F}
 library(smc.deconvolution)
 X = smc.deconvolution::brain_heart_spec_ge
@@ -23,58 +23,77 @@ Y = smc.deconvolution::create_mixture_samples(X,M)
 set.seed(10)
 est_props = smc.deconvolution::smc_deconvolution(Y=Y,K=2,L=10)
 M_est = smc.deconvolution::combine_est_props(est_props[[1]],M)
-smc.deconvolution::simulation_summary(est_props[[2]])
-```
-
-Mean Run Time: 20.0908452 minutes (sd = 0.3825698 minutes)
-
-
-```{r, eval = F}
-smc.deconvolution::scatter_plot(M,M_est)
+smc.deconvolution::simulation_summary(est_props[[2]]) #provides simulation run time
+smc.deconvolution::jsd_mse(M,M_est) #calculates JSD and MSE
 ```
 
 
+Code chunk (2) performs the same task as (1), but parallelizes over 8 cores and plots Figure 1.
 
-Parallelization:
+(2) $M^*$, parallelization:
 ```{r, eval = F}
 Y = smc.deconvolution::create_mixture_samples(X,M)
 set.seed(10)
-est_props = smc.deconvolution::smc_deconvolution(Y=Y,K=2,L=10, parallel = T, 
-                                                 num_cores = 8)
+est_props = smc.deconvolution::smc_deconvolution(Y=Y,K=2,L=10,parallel = T,num_cores = 8)
 M_est = smc.deconvolution::combine_est_props(est_props[[1]],M)
-est_props[[2]]
+est_props[[2]] #provides simulation run time
+smc.deconvolution::scatter_plot(M,M_est) #plot shown in Figure 1
 ```
-Run Time: 1.703375 hours
 
-$\frac{20.0908452*10-60*1.703375}{20.0908452*10} = 0.4912982$
 
-Using parallelization reduces the run time of the 10 iterations by approximately 49\%.
+Code chunks (3-5) perform SMC deconvolution on a set of 10, 15, and 20 heterogeneous samples, respectively, generated according to proportions drawn from a Dirichlet distribution.
 
+(3) Dirichlet, 10 samples
 ```{r, eval = F}
-X = smc.deconvolution::brain_heart_spec_ge
-X = smc.deconvolution::hvg_selection(X)
 M = prop_rdirichlet(10,10,2,colnames(X))
 Y = smc.deconvolution::create_mixture_samples(X,M)
 set.seed(10)
-est_props = smc.deconvolution::smc_deconvolution(Y=Y,K=2,L=10,N=40, parallel = T, 
-                                                 num_cores = 8)
-M_est = smc.deconvolution::combine_est_props(est_props[[1]],M)
-smc.deconvolution::simulation_summary(est_props[[2]])
-smc.deconvolution::scatter_plot(M,M_est)
+est_props = smc.deconvolution::smc_deconvolution(Y=Y,K=2,L=10,parallel = T,num_cores = 8)
+M_est10 = smc.deconvolution::combine_est_props(est_props[[1]],M)
+run_time10 = est_props[[2]] #provides simulation run time
+mad10 = smc.deconvolution::mad(M,M_est10)
 ```
 
 
-1.331589   hours
+(4) Dirichlet, 15 samples
+```{r, eval = F}
+M = prop_rdirichlet(seed=10,n =15,K=2,types=colnames(X))
+Y = smc.deconvolution::create_mixture_samples(X,M)
+set.seed(10)
+est_props = smc.deconvolution::smc_deconvolution(Y=Y,K=2,L=10,parallel = T,num_cores = 8)
+M_est15 = smc.deconvolution::combine_est_props(est_props[[1]],M)
+run_time15 = est_props[[2]] #provides simulation run time
+mad15 = smc.deconvolution::mad(M,M_est15)
+```
 
 
-We have uploaded the SMC-Deconvolution package to GitHub, and it passes the travis-ci check:
+
+(5) Dirichlet, 20 samples
+```{r, eval = F}
+
+M = prop_rdirichlet(seed=10,n=20,K=2,types=colnames(X))
+Y = smc.deconvolution::create_mixture_samples(X,M)
+set.seed(10)
+est_props = smc.deconvolution::smc_deconvolution(Y=Y,K=2,L=10,parallel = T,num_cores = 8)
+M_est20 = smc.deconvolution::combine_est_props(est_props[[1]],M)
+run_time20 = est_props[[2]]
+mad20 = smc.deconvolution::mad(M,M_est20)
+```
+
+(7) MAD plot for samples generated from Dirichlet distributions, Figure 3
+```{r, eval = F}
+mad_plot(c(mad10,mad15,mad20), c(10,15,20))
+```
+
+
+We have uploaded our SMC-Deconvolution R package to GitHub, and it passes the travis-ci check:
 
 https://github.com/kpcoleman/SMC-Deconvolution
 
 
 ## Introduction
 
-With technological advances in the field of genetics has come a vast increase in the amount of available gene expression (GE) data. These data have many applications, including in the study of the genetc basis of diseases. Though there is an abundance of GE data, downstream analysis may be inhibited by the lack of single-cell resolution in many of these datasets. Specifically, samples in GE datasets without single-cell resolution can contain multiple cells, potentially of different cell types. A lack of knowledge of the cell-type compositions of the samples in such datasets can cause limitations for analysis and application of these data. As a result, many cell-type deconvolution algorithmns have been developed to estimate the proportions of cells of given types across samples in heterogeneous GE datasets that lack single-cell resolution. One such method, developed by Ogundijo and Wang [-@ogundijo], utilizes a sequential Monte Carlo (SMC) approach to estimate cell-type specific gene expression levels and cell-type proportions in heterogeneous GE datasets. The intention of this project was to replicate some of the simulations performed by these authors, as well as extend their investigation by considering multiple datasets with samples composed of different proportions of cell types.
+With technological advances in the field of genetics has come a vast increase in the amount of available gene expression (GE) data. These data have many applications, including in the study of the genetc basis of diseases. Though there is an abundance of GE data, downstream analysis may be inhibited by the lack of single-cell resolution in many of these datasets. Specifically, samples in GE datasets without single-cell resolution can contain multiple cells, potentially of different cell types. A lack of knowledge of the cell-type compositions of the samples in such datasets can cause limitations for analysis and application of these data. As a result, many cell-type deconvolution algorithmns have been developed to estimate the proportions of cells of given types across samples in heterogeneous GE datasets that lack single-cell resolution. One such method, developed by Ogundijo and Wang [-@ogundijo], utilizes a sequential Monte Carlo (SMC) approach to estimate cell-type specific gene expression levels and cell-type proportions in heterogeneous GE datasets. The intention of this project was to replicate some of the simulations performed by these authors, as well as extend their investigation by considering multiple datasets with samples composed of different proportions of cell types and including more evaluation metrics. We also incorporated a highly variable gene selection step to increase the computational efficiency of the algorithm.
 
 
 ## Methods
@@ -219,7 +238,9 @@ Defining the forward and backward Markov kernels in this way results in the foll
 
 For time $t=1$ of the SMC algorithm, N samples for the unknown parameters $\lambda,\ \{m_{kj}\},\ \textrm{and}\ \{x_{ik}\}$ from their respective prior distributions defined above, and the weights $w_1^1,...,w_1^N$ are set to $\frac{1}{N}$. Then, for times $t=2,...,T$, the following steps are peformed:
 
-(1) The unnormalized weights $\tilde{w}_t^n$ are calculated as:
+(1) The log-likelihood $\text{log}(p(Y|\theta_{t-1}^n)$ is calculated and exponentiated to obtain the likelihood $p(Y|\theta_{t-1}^n$.
+
+(2) The unnormalized weights $\tilde{w}_t^n$ are calculated as:
 
 \[
 \tilde{w}_t^n = w_{t-1}^n p(Y|\theta_{t-1}^n)^{\epsilon_t-\epsilon_{t-1}},
@@ -227,11 +248,11 @@ For time $t=1$ of the SMC algorithm, N samples for the unknown parameters $\lamb
 
 \ \ \ \ \ \ \ \ and then normalized to sum to 1.
 
-(2) The ESS is calculated and resampling occurs if necessary.
+(3) The ESS is calculated and resampling occurs if necessary.
 
-(3) Sample $m_{kj}$ $N$ times from $p_t(m_{kj}|\cdot)$, $k = 1,...,K$, $j=1,...,J$.
+(4) Sample $m_{kj}$ $N$ times from $p_t(m_{kj}|\cdot)$, $k = 1,...,K$, $j=1,...,J$.
 
-(4) Sample $x_{ik}$ $N$ times from $p_t(x_{ik}|\cdot)$, $i = 1,...,I$, $k = 1,...,K$.
+(5) Sample $x_{ik}$ $N$ times from $p_t(x_{ik}|\cdot)$, $i = 1,...,I$, $k = 1,...,K$.
 
 
 After $T$ iterations, the estimated cell-type proportions across the samples in $Y$ are calculated as:
@@ -242,45 +263,43 @@ After $T$ iterations, the estimated cell-type proportions across the samples in 
 
 
 ## Results
-We utilized the SMC deconvolution method to analyze the 
+
+For this project, we analyzed the Affymetrix oligonucleotide microarray dataset containing the GE levels of samples consisting of brain and heart cells. We used the samples in this dataset to construct a matrix of cell-type specific GE profiles. We then identified the top 5\% HVG's in this matrix to construct $X^*$. The matrix of cell-type proportions specified by the authors contains 3 of each of the following compositions of brain and heart cells:
+
+\centering
+![](~/GitHub/smc.deconvolution/figures/M_star.pdf){width=60%}
+
+\raggedright
+
+We then performed matrix multiplication between $X^*$ and $M^*$ to construct a GE matrix consisting of 27 heterogeneous samples, $Y^*$.
 
 
-The SMC algorithm is unsupervised, and so does not rely on an annotated reference dataset. As a result, this method does not provide the name of the cell type associated with a given proportion estimate.
-
-
-![Scatter plot of true versus estimated cell-type proportions (Proportions given in paper)](~/GitHub/smc.deconvolution/figures/deconvolution_scatterplot1.pdf){width=60%}
-
-
-![Scatter plot of true versus estimated cell-type proportions (Proportions generated from Dirichlet distribution for 10 samples)](~/GitHub/smc.deconvolution/figures/deconvolution_scatterplot2.pdf){width=60%}
-
-
-
-\[
-\theta = \{\lambda,X,M\} x_{ik},m_{kj}\}\ \text{are the parameters estimated by the model}
-\]
+We ran the SMC deconvolution algorithm using $Y^*$ as input for 10 iterations. The SMC algorithm is unsupervised, and so does not rely on an annotated reference dataset. As a result, this method does not provide the name of the cell type associated with a given proportion estimate. Denote the cell types in the matrix of proportion estimates as $k = 1,2$. To evaluate model performance, we associate type $k$ with the cell type that that results in the minimum mean absolute deviation (MAD) between the estimated and true proportions across all samples. We then calculated the mean of the cell-type proportion estimates across the 10 iterations for each sample. The correlation between the true and estimated proportions is approximately 1, and a scatter plot of the true and estimated proportions for each cell type in each sample is shown in Figure 1. The MAD between the true and estimated proportions is 0.035. We ran the 10 iterations of SMC deconvolution algorithm twice, once using only 1 core, and once parallelizing over 8 cores. When not running the iterations in parallel, the mean run time across the iterations was 20.0908452 minutes (sd = 0.3825698 minutes), resulting in a total of approximately 201 minutes. When parallelizing over 8 cores, the total run time of the 10 iterations was 102.2025 minutes, resulting in a 49\% decrease in run time.
 
 
 
-\[
-\]
+![Scatter plot of true versus estimated cell-type proportions (M*)](~/GitHub/smc.deconvolution/figures/deconvolution_scatterplot1.pdf){width=55%}
 
-\[
-\lambda\sim \text{Gamma}(\alpha,\beta)
-\]
 
-\[
-w_1^n = 1/N
-\]
+We then constructed a new matrix of proportions of brain and heart cells across 10 samples, where the proportions in each sample were generated using a Dirichlet distribution. The GE matrix of heterogeneous samples, $Y$, was constructed by multiplying $X^*$ with this matrix of cell-type proportions. We ran the SMC-deconvolution for 10 iterations to obtain the proportion estimates of each cell-type across the 10 samples in $Y$. The correlation between the true and estimated proportions is approximately 0.52, much lower than that calculated when using $M^*$ as the matrix of cell-type proportions. The MAD between the true and estimated proportions is 0.21. When using the proportions generated from a Dirichlet distribution, all proportion estimates are close to 0.5. We ran these iterations in parallel across 8 cores, and the run time was 79.9 minutes.
 
 
 
-\[
-\tilde{w}_t^n = w_{t-1}^n p(Y|\theta_{t-1})^{\epsilon_t-\epsilon_{t-1}}
-\]
+We constructed two more matrices of cell-type proportions using a Dirichlet distribution, one with 15 samples and one with 20 samples. For each of these matrices, we again constructed a GE matrix of heterogeneous samples and estimated the cell-type proportions by running the the SMC-deconvolution for 10 iterations. The MAD between the true and estimated proportions for the matrices with 15 and 20 samples are 0.21 and 0.24. A plot showing the MAD between the true and estimated proportions when constructing heterogeneous samples according to a Dirichlet distribution for different sample sizes is shown in Figure 3. When parallelizing over 8 cores, the run time for the set with 15 samples was 88.73 minutes, and that for 20 samples was 101.10 minutes.    
+
+
+For all simulations discussed, we calculated the mean squared error (MSE) and Jensen-Shannon divergence (JSD) between the true and estimated proportions for each cell type across samples, where JSD is a distance metric based on the Kullback-Leibler (KL) divergence that measures the difference between two probability distributions. MSE and JSD are commonly used to evaluate cell-type deconvolution performance, and lower values of these metrics indicate a greater similarity between the true and estimated proportions. These evaluation metrics for all simulations are shown below:
+
+\centering
+![JSD and MSE between true and estimated proportions](~/GitHub/smc.deconvolution/figures/jsd_mse.pdf){width=75%}\
+
+\raggedright
 
 
 
+## Conclusion
 
+Cell-type deconvolution is an important step when analyzing GE data consisting of samples of a mixture of different cell types. Here we presented a sequential Monte Carlo based method for cell-type deconvolution, proposed by Ogundijo and Wang. We incorporated a highly variable gene selection step, that can be used to reduced the dimensionality of the GE matrix of heterogeneous samples when a cell-type specific gene expression matrix is available. We evaluated the SMC deconvolution algorithm on multiple sets of mixture samples using brain and heart specific gene expression profiles and specified proportions of these cell types. The algorithm was shown to provide accurate results when a specific matrix of cell-type proportions was used, but the results were not accurate when the heterogeneous samples were genetated according to proportions sampled from a Dirichlet distribution. The computation time of the simulations decreased greatly when parallelizing over multiple cores.
 
 
 \centering
