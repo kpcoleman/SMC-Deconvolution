@@ -4,23 +4,25 @@
 \alias{smc_deconvolution}
 \title{smc_deconvolution}
 \usage{
-smc_deconvolution(X, Y, M, N = 40, L = 1, num_cores = 1)
+smc_deconvolution(Y, K, N = 40, L = 1, parallel = F, num_cores = 1)
 }
 \arguments{
-\item{X}{cell-type specific GE data}
-
 \item{Y}{bulk GE data}
 
-\item{M}{true cell-type proportions}
+\item{K}{number of cell types}
 
 \item{N}{number of samples}
 
 \item{L}{number of iterations}
 
+\item{parallel}{whether or not to use parallel computing}
+
 \item{num_cores}{number of cores}
 }
 \value{
 a data frame with deconvolution results
+
+runtime of method
 }
 \description{
 smc_deconvolution

@@ -5,7 +5,7 @@
 \alias{proportions}
 \title{Cell-type proportions for samples in 'affy_2cells'}
 \format{
-A data frame
+A matrix
 }
 \source{
 https://github.com/moyanre/smcgenedeconv
@@ -14,6 +14,6 @@ https://github.com/moyanre/smcgenedeconv
 proportions
 }
 \description{
-A data frame containing cell-type proportions of heart/brain cells
+A matrix containing cell-type proportions of brain/heart cells
 }
 \keyword{datasets}

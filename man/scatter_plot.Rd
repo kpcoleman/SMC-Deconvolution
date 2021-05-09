@@ -4,10 +4,12 @@
 \alias{scatter_plot}
 \title{scatter_plot}
 \usage{
-scatter_plot(df)
+scatter_plot(M, M_est)
 }
 \arguments{
-\item{df}{deconvolution results (columns = 'true','est','type','color')}
+\item{M}{cell-type proportions}
+
+\item{M_est}{deconvolution results}
 }
 \description{
 scatter_plot

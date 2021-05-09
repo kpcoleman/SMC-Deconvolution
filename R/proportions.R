@@ -1,8 +1,8 @@
 #' Cell-type proportions for samples in 'affy_2cells'
 #'
-#'A data frame containing cell-type proportions of heart/brain cells
+#'A matrix containing cell-type proportions of brain/heart cells
 #'
-#' @format A data frame
+#' @format A matrix
 #'
 #' @source https://github.com/moyanre/smcgenedeconv
 "proportions"

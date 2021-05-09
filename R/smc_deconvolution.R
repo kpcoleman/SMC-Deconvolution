@@ -1,13 +1,14 @@
 #' smc_deconvolution
 #'
-#' @param X cell-type specific GE data
 #' @param Y bulk GE data
-#' @param M true cell-type proportions
+#' @param K number of cell types
 #' @param N number of samples
 #' @param L number of iterations
+#' @param parallel whether or not to use parallel computing
 #' @param num_cores number of cores
 #'
 #'@return a data frame with deconvolution results
+#'@return runtime of method
 #'
 #'
 #'@importFrom stats rgamma rnorm runif
@@ -20,16 +21,22 @@
 #'@export
 
 
-smc_deconvolution = function(X,Y,M,N=40,L=1, num_cores=1){
-  compute_cv = function(x) sd(x) / mean(x)
-  cv = apply(X, 1, compute_cv)
-  cutoff =0.05
-  X = X[rank(cv) / length(cv) > 1 - cutoff, ]
-  Y = Y[rank(cv) / length(cv) > 1 - cutoff, ]
-  deconvolution = function(X,Y,N){
-    K = ncol(X)
+smc_deconvolution = function(Y,K,N=40,L=1, parallel= F, num_cores=1){
+  if (K<2){
+    stop('Number of cell types must be >= 2')
+  }
+  if (num_cores<1 || num_cores > detectCores()){
+    stop(paste('Number of cores must be between 1 and'),detectCores())
+  }
+  if (N<1){
+    stop('Number of samples must be >= 1')
+  }
+  if (L<1){
+    stop('Number of iterations must be >= 1')
+  }
+  deconvolution = function(Y,K,N){
     J=ncol(Y)
-    I = nrow(X)
+    I = nrow(Y)
     #starting values
     mu_kj = 0
     nu_kj = 1/0.01
@@ -65,7 +72,6 @@ smc_deconvolution = function(X,Y,M,N=40,L=1, num_cores=1){
     log_pdf_y = rep(NA,N)
 
     for (t in 2:T1){
-      print(t)
       for (n in 1:N){
         log_pdf_y[n]= I*J*(epsilon[t]-epsilon[t-1])/2*log(lambda[n]) -lambda[n]*(epsilon[t]-epsilon[t-1])/2*sum((Y-(X1[[n]]%*%M1[[n]]))^2)
       }
@@ -133,23 +139,30 @@ smc_deconvolution = function(X,Y,M,N=40,L=1, num_cores=1){
     M_est = prop.table(M_est1,2)
     return(M_est)
   }
-  cl = makeCluster(num_cores,type="SOCK")
-  registerDoParallel(cl)
-  props = foreach(l=1:L) %dopar% {
-    deconvolution(X,Y,N)
+  if (parallel==T){
+    start.time = Sys.time()
+    cl = makeCluster(num_cores,type="SOCK")
+    registerDoParallel(cl)
+    props = foreach(l=1:L) %dopar% {
+      deconvolution(Y,K,N)
+    }
+    stopCluster(cl)
+    end.time = Sys.time()
+    runtime = end.time - start.time
   }
-  stopCluster(cl)
-  props_est = Reduce('+',props)/L
-  df = data.frame(c(M[1,],M[2,]))
-  colnames(df) = 'true'
-  df$est = c(props_est[1,],props_est[2,])
-  df$type = c(rep(rownames(M)[1],ncol(M)),rep(rownames(M)[2],ncol(M)))
-  df$color = c(rep('magenta',ncol(M)),rep('green',ncol(M)))
-  #plot(df$true, df$est,col = df$color, pch = 16, cex = 2, ylim = c(0,1), xlab = 'True Mixture Proportion', ylab = 'Estimated mixture proportion')
-  #lines(seq(0,1,0.01),seq(0,1,0.01), lty = 3)
-  #legend(0.8,0.2, legend = c('ideal',rownames(M)[1],rownames(M)[2]), col = c('black','magenta','green'), lty = c(3,NA,NA), pch = c(NA,16,16))
-  #legend(0.1,0.9,legend = parse(text=sprintf('paste(r,\' = %s\')',round(cor(df$true, df$est),2))))
-  return(df)
+  else {
+    props = vector(mode = "list", length = L)
+    runtime = c(rep(NA,L))
+    for (l in 1:L){
+      print(paste('Itertation',l))
+      start.time = Sys.time()
+      props[[l]] = deconvolution(Y,K,N)
+      end.time = Sys.time()
+      runtime[l] = end.time - start.time
+    }
+  }
+  #props_est = Reduce('+',props)/L
+  return(list(props,runtime))
 }
 
 
